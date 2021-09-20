@@ -93,7 +93,7 @@ test('TileLayer', async t => {
       },
       onAfterUpdate: ({layer, subLayers}) => {
         if (!layer.isLoaded) {
-          t.ok(subLayers.length < 2);
+          t.is(subLayers.length, 2, 'Cached layers are used while loading');
         } else {
           t.is(subLayers.length, 2, 'Rendered sublayers');
           t.is(getTileDataCalled, 2, 'Fetched tile data');
@@ -160,7 +160,7 @@ test('TileLayer', async t => {
       onAfterUpdate: ({layer, subLayers}) => {
         if (layer.isLoaded) {
           t.is(getTileDataCalled, 6, 'Refetched tile data');
-          t.is(subLayers.length, 4, 'Invalidated cached sublayers with prop change');
+          t.is(subLayers.length, 8, 'Cached content is used to render sub layers');
         }
       }
     }
@@ -258,7 +258,7 @@ test('TileLayer#AbortRequestsOnNewLayer', async t => {
     zoom: 1,
     repeat: true
   });
-  let tileset;
+  let tiles;
 
   const testCases = [
     {
@@ -266,7 +266,7 @@ test('TileLayer#AbortRequestsOnNewLayer', async t => {
         getTileData: () => sleep(10)
       },
       onAfterUpdate: ({layer}) => {
-        tileset = layer.state.tileset;
+        tiles = layer.state.tileset._tiles;
       }
     },
     {
@@ -275,7 +275,7 @@ test('TileLayer#AbortRequestsOnNewLayer', async t => {
       },
       onAfterUpdate: () => {
         t.is(
-          tileset._tiles.map(tile => tile._isCancelled).length,
+          tiles.map(tile => tile.isCancelled).length,
           4,
           'all tiles from discarded layer should be cancelled'
         );
